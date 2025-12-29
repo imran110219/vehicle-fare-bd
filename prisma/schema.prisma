@@ -1,0 +1,156 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum City {
+  DHAKA
+  CHATTOGRAM
+  SYLHET
+  KHULNA
+  OTHER
+}
+
+enum TimeOfDay {
+  MORNING
+  AFTERNOON
+  EVENING
+  NIGHT
+}
+
+enum Weather {
+  CLEAR
+  RAIN
+}
+
+enum NegotiationDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum DistanceBucket {
+  KM_0_1
+  KM_1_2
+  KM_2_3
+  KM_3_5
+  KM_5_8
+  KM_8_PLUS
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  role          Role      @default(USER)
+  reports       FareReport[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model CityConfig {
+  id        String   @id @default(cuid())
+  city      City     @unique
+  baseFare  Int
+  perKmRate Int
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+model FareReport {
+  id              String                 @id @default(cuid())
+  userId          String
+  user            User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city            City
+  pickupArea      String
+  dropArea        String
+  pickupLat       Float?
+  pickupLng       Float?
+  dropLat         Float?
+  dropLng         Float?
+  distanceKm      Float
+  farePaid        Int
+  timeOfDay       TimeOfDay
+  weather         Weather?
+  passengerCount  Int
+  luggage         Boolean
+  traffic         Boolean
+  negotiation     NegotiationDifficulty
+  notes           String?
+  createdAt       DateTime               @default(now())
+
+  @@index([city, createdAt])
+  @@index([city, distanceKm])
+}
+
+model GeocodeCache {
+  id          String   @id @default(cuid())
+  query       String   @unique
+  lat         Float
+  lng         Float
+  displayName String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model DistanceBucketStat {
+  id         String        @id @default(cuid())
+  city       City
+  bucket     DistanceBucket
+  timeOfDay  TimeOfDay
+  medianFare Float
+  iqrLow     Float
+  iqrHigh    Float
+  count      Int
+  updatedAt  DateTime      @updatedAt
+
+  @@unique([city, bucket, timeOfDay])
+}

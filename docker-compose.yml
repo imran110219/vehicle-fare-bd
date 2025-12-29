@@ -1,0 +1,33 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:15
+    container_name: rickshaw-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: rickshaw_fare
+    ports:
+      - "5432:5432"
+    volumes:
+      - rickshaw_pgdata:/var/lib/postgresql/data
+  app:
+    build: .
+    container_name: rickshaw-app
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/rickshaw_fare
+      NEXTAUTH_SECRET: change-me
+      NEXTAUTH_URL: http://localhost:3000
+      ALLOW_NOMINATIM: "false"
+      ALLOW_OSRM: "false"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    command: npm run dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+volumes:
+  rickshaw_pgdata:
