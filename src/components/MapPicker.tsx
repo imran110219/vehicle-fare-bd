@@ -46,6 +46,8 @@ export function MapPicker({ label, value, onChange }: Props) {
     mapRef.current = map;
 
     return () => {
+      markerRef.current = null;
+      mapRef.current = null;
       map.remove();
     };
   }, [onChange]);
