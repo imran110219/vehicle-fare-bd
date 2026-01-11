@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { VehicleFareConfig, VehicleType } from "@prisma/client";
+import { City, VehicleFareConfig, VehicleType } from "@prisma/client";
 import { calculateFare } from "@/lib/fare";
 import { estimateSchema } from "@/lib/validation";
 import { getDictionary, type Lang } from "@/lib/i18n";
@@ -25,15 +25,15 @@ type Props = {
 
 export function EstimatorClient({ configs, lang }: Props) {
   const dictionary = getDictionary(lang);
-  const cityOptions = useMemo(
-    () => Array.from(new Set(configs.map((item) => item.city))),
-    [configs]
-  );
+  const cityOptions = useMemo(() => {
+    const options = Array.from(new Set(configs.map((item) => item.city)));
+    return options.length ? options : Object.values(City);
+  }, [configs]);
   const [city, setCity] = useState(cityOptions[0] || "DHAKA");
-  const vehicleOptions = useMemo(
-    () => configs.filter((item) => item.city === city).map((item) => item.vehicleType),
-    [city, configs]
-  );
+  const vehicleOptions = useMemo(() => {
+    const options = configs.filter((item) => item.city === city).map((item) => item.vehicleType);
+    return options.length ? options : Object.values(VehicleType);
+  }, [city, configs]);
   const [vehicleType, setVehicleType] = useState<VehicleType>(vehicleOptions[0] || "RICKSHAW");
   const [timeOfDay, setTimeOfDay] = useState("MORNING");
   const [weather, setWeather] = useState<"CLEAR" | "RAIN" | "">("");

@@ -27,6 +27,8 @@ export default async function InsightsPage({
     select: { city: true, vehicleType: true },
     orderBy: [{ city: "asc" }, { vehicleType: "asc" }]
   });
+  const cityOptions = Array.from(new Set(availableConfigs.map((item) => item.city)));
+  const vehicleOptions = Array.from(new Set(availableConfigs.map((item) => item.vehicleType)));
 
   const stats = await getCommunityStats(city, vehicleType, bucket, timeOfDay);
 
@@ -41,7 +43,7 @@ export default async function InsightsPage({
         <div>
           <label className="text-sm font-semibold">City</label>
           <select name="city" defaultValue={city} className="mt-2 w-full rounded-lg border border-brand-200 p-2">
-            {Array.from(new Set(availableConfigs.map((item) => item.city))).map((item) => (
+            {(cityOptions.length ? cityOptions : Object.values(City)).map((item) => (
               <option key={item} value={item}>
                 {item}
               </option>
@@ -55,7 +57,7 @@ export default async function InsightsPage({
             defaultValue={vehicleType}
             className="mt-2 w-full rounded-lg border border-brand-200 p-2"
           >
-            {Array.from(new Set(availableConfigs.map((item) => item.vehicleType))).map((item) => (
+            {(vehicleOptions.length ? vehicleOptions : Object.values(VehicleType)).map((item) => (
               <option key={item} value={item}>
                 {item}
               </option>

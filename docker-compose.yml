@@ -2,11 +2,11 @@ version: "3.9"
 services:
   db:
     image: postgres:15
-    container_name: rickshaw-db
+    container_name: vehicle_db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: rickshaw_fare
+      POSTGRES_DB: vehicle_fare
     ports:
       - "5432:5432"
     volumes:
@@ -15,7 +15,7 @@ services:
     build: .
     container_name: rickshaw-app
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/rickshaw_fare
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/vehicle_fare
       NEXTAUTH_SECRET: change-me
       NEXTAUTH_URL: http://localhost:3000
       ALLOW_NOMINATIM: "false"
