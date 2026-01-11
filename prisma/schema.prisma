@@ -32,6 +32,17 @@ enum Weather {
   RAIN
 }
 
+enum VehicleType {
+  RICKSHAW
+  CNG
+  AUTO_RICKSHAW
+  BIKE
+  CAR
+  MICROBUS
+  BUS
+  OTHER
+}
+
 enum NegotiationDifficulty {
   EASY
   MEDIUM
@@ -96,13 +107,21 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-model CityConfig {
+model VehicleFareConfig {
   id        String   @id @default(cuid())
-  city      City     @unique
-  baseFare  Int
-  perKmRate Int
-  updatedAt DateTime @updatedAt
-  createdAt DateTime @default(now())
+  city                City
+  vehicleType         VehicleType
+  baseFare            Int
+  perKmRate           Int
+  morningMultiplier   Float    @default(1)
+  afternoonMultiplier Float    @default(1)
+  eveningMultiplier   Float    @default(1)
+  nightMultiplier     Float    @default(1.15)
+  updatedAt           DateTime @updatedAt
+  createdAt           DateTime @default(now())
+
+  @@unique([city, vehicleType])
+  @@index([city])
 }
 
 model FareReport {
@@ -110,12 +129,9 @@ model FareReport {
   userId          String
   user            User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   city            City
+  vehicleType     VehicleType
   pickupArea      String
   dropArea        String
-  pickupLat       Float?
-  pickupLng       Float?
-  dropLat         Float?
-  dropLng         Float?
   distanceKm      Float
   farePaid        Int
   timeOfDay       TimeOfDay
@@ -131,19 +147,10 @@ model FareReport {
   @@index([city, distanceKm])
 }
 
-model GeocodeCache {
-  id          String   @id @default(cuid())
-  query       String   @unique
-  lat         Float
-  lng         Float
-  displayName String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
 model DistanceBucketStat {
   id         String        @id @default(cuid())
   city       City
+  vehicleType VehicleType
   bucket     DistanceBucket
   timeOfDay  TimeOfDay
   medianFare Float
@@ -152,5 +159,5 @@ model DistanceBucketStat {
   count      Int
   updatedAt  DateTime      @updatedAt
 
-  @@unique([city, bucket, timeOfDay])
+  @@unique([city, vehicleType, bucket, timeOfDay])
 }

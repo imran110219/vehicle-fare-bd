@@ -9,4 +9,3 @@
 - Offline-first mobile-friendly estimator
 - City-specific fare rules and special events pricing
 - Public API keys with rate limiting
-- Map tiles customization and dark/light themes

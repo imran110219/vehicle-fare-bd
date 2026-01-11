@@ -6,8 +6,8 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import type { Lang } from "@/lib/i18n";
 
 export const metadata = {
-  title: "Rickshaw Fare Checker (BD)",
-  description: "Estimate fair rickshaw fares and share community insights."
+  title: "Vehicle Fare Checker (BD)",
+  description: "Estimate fair vehicle fares and share community insights."
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

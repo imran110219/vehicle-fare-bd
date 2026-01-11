@@ -14,9 +14,6 @@ Required:
 
 Optional:
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` - enable Google login
-- `ALLOW_NOMINATIM` - set to `true` to enable geocoding
-- `NOMINATIM_BASE_URL` - override Nominatim host
-- `ALLOW_OSRM` - set to `true` to enable OSRM routing
 
 ## Local Development
 ```

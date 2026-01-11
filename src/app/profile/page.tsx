@@ -28,7 +28,9 @@ export default async function ProfilePage() {
             {reports.map((report) => (
               <div key={report.id} className="rounded-xl border border-brand-100 p-4">
                 <div className="flex items-center justify-between">
-                  <p className="font-semibold text-brand-800">{report.city}</p>
+                  <p className="font-semibold text-brand-800">
+                    {report.city} • {report.vehicleType}
+                  </p>
                   <p className="text-sm text-slate-500">{report.createdAt.toLocaleString()}</p>
                 </div>
                 <p className="text-sm text-slate-700">

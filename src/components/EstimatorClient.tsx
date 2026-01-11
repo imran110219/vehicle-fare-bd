@@ -1,10 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { CityConfig } from "@prisma/client";
-import { MapPicker } from "@/components/MapPicker";
+import { useEffect, useMemo, useState } from "react";
+import { VehicleFareConfig, VehicleType } from "@prisma/client";
 import { calculateFare } from "@/lib/fare";
-import { haversineDistanceKm } from "@/lib/distance";
 import { estimateSchema } from "@/lib/validation";
 import { getDictionary, type Lang } from "@/lib/i18n";
 
@@ -21,33 +19,40 @@ const weatherOptions = [
 ];
 
 type Props = {
-  configs: CityConfig[];
+  configs: VehicleFareConfig[];
   lang: Lang;
 };
 
-type LatLng = { lat: number; lng: number };
-
 export function EstimatorClient({ configs, lang }: Props) {
   const dictionary = getDictionary(lang);
-  const [pickup, setPickup] = useState<LatLng | undefined>();
-  const [drop, setDrop] = useState<LatLng | undefined>();
-  const [pickupArea, setPickupArea] = useState("");
-  const [dropArea, setDropArea] = useState("");
-  const [city, setCity] = useState(configs[0]?.city || "DHAKA");
+  const cityOptions = useMemo(
+    () => Array.from(new Set(configs.map((item) => item.city))),
+    [configs]
+  );
+  const [city, setCity] = useState(cityOptions[0] || "DHAKA");
+  const vehicleOptions = useMemo(
+    () => configs.filter((item) => item.city === city).map((item) => item.vehicleType),
+    [city, configs]
+  );
+  const [vehicleType, setVehicleType] = useState<VehicleType>(vehicleOptions[0] || "RICKSHAW");
   const [timeOfDay, setTimeOfDay] = useState("MORNING");
   const [weather, setWeather] = useState<"CLEAR" | "RAIN" | "">("");
   const [passengerCount, setPassengerCount] = useState(1);
   const [luggage, setLuggage] = useState(false);
   const [traffic, setTraffic] = useState(false);
   const [distanceKm, setDistanceKm] = useState(0);
-  const [distanceNote, setDistanceNote] = useState("Straight-line estimate used");
   const [communityRange, setCommunityRange] = useState<string | null>(null);
-  const [geoError, setGeoError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!vehicleOptions.includes(vehicleType)) {
+      setVehicleType(vehicleOptions[0] || "RICKSHAW");
+    }
+  }, [vehicleOptions, vehicleType]);
+
   const config = useMemo(
-    () => configs.find((item) => item.city === city) || configs[0],
-    [city, configs]
+    () => configs.find((item) => item.city === city && item.vehicleType === vehicleType) || configs[0],
+    [city, configs, vehicleType]
   );
 
   const fare = config
@@ -61,33 +66,10 @@ export function EstimatorClient({ configs, lang }: Props) {
       })
     : null;
 
-  async function computeDistance() {
-    if (pickup && drop) {
-      try {
-        const res = await fetch(
-          `/api/estimate?pickupLat=${pickup.lat}&pickupLng=${pickup.lng}&dropLat=${drop.lat}&dropLng=${drop.lng}`
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setDistanceKm(data.distanceKm);
-          setDistanceNote(data.note);
-          return data.distanceKm as number;
-        }
-      } catch (error) {
-        // fall through to haversine
-      }
-      const fallback = haversineDistanceKm(pickup, drop);
-      setDistanceKm(fallback);
-      setDistanceNote("Straight-line estimate used");
-      return fallback;
-    }
-    return distanceKm;
-  }
-
   async function fetchCommunityRange(nextDistance: number) {
     if (!nextDistance) return;
     const res = await fetch(
-      `/api/insights?city=${city}&timeOfDay=${timeOfDay}&distanceKm=${nextDistance}`
+      `/api/insights?city=${city}&vehicleType=${vehicleType}&timeOfDay=${timeOfDay}&distanceKm=${nextDistance}`
     );
     if (!res.ok) {
       setCommunityRange(null);
@@ -101,26 +83,11 @@ export function EstimatorClient({ configs, lang }: Props) {
     setCommunityRange(`BDT ${Math.round(data.iqrLow)} - ${Math.round(data.iqrHigh)} (${data.count} reports)`);
   }
 
-  async function geocodeArea(query: string, type: "pickup" | "drop") {
-    if (!query) return;
-    setGeoError(null);
-    const res = await fetch(`/api/geocode?query=${encodeURIComponent(query)}`);
-    if (!res.ok) {
-      setGeoError("Geocoding failed. Please place the pin manually.");
-      return;
-    }
-    const data = await res.json();
-    if (type === "pickup") {
-      setPickup({ lat: data.lat, lng: data.lng });
-    } else {
-      setDrop({ lat: data.lat, lng: data.lng });
-    }
-  }
-
   async function onEstimate() {
-    const nextDistance = await computeDistance();
+    const nextDistance = distanceKm;
     const parsed = estimateSchema.safeParse({
       city,
+      vehicleType,
       distanceKm: nextDistance,
       timeOfDay,
       weather: weather || undefined,
@@ -143,7 +110,7 @@ export function EstimatorClient({ configs, lang }: Props) {
       <header className="rounded-2xl bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-bold text-brand-900">{dictionary.estimatorTitle}</h1>
         <p className="text-sm text-slate-600">
-          Estimate fair rickshaw fares in Bangladesh using city pricing and community data.
+          Estimate fair vehicle fares in Bangladesh using city pricing and community data.
         </p>
       </header>
 
@@ -157,9 +124,23 @@ export function EstimatorClient({ configs, lang }: Props) {
                 onChange={(event) => setCity(event.target.value)}
                 className="mt-2 w-full rounded-lg border border-brand-200 p-2"
               >
-                {configs.map((item) => (
-                  <option key={item.city} value={item.city}>
-                    {item.city}
+                {cityOptions.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-slate-700">Vehicle type</label>
+              <select
+                value={vehicleType}
+                onChange={(event) => setVehicleType(event.target.value as VehicleType)}
+                className="mt-2 w-full rounded-lg border border-brand-200 p-2"
+              >
+                {vehicleOptions.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
                   </option>
                 ))}
               </select>
@@ -219,52 +200,14 @@ export function EstimatorClient({ configs, lang }: Props) {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="text-sm font-semibold text-slate-700">Pickup area</label>
-              <input
-                value={pickupArea}
-                onChange={(event) => setPickupArea(event.target.value)}
-                placeholder="e.g. Dhanmondi"
-                className="mt-2 w-full rounded-lg border border-brand-200 p-2"
-              />
-              <button
-                type="button"
-                onClick={() => geocodeArea(pickupArea, "pickup")}
-                className="mt-2 text-xs font-semibold text-brand-700"
-              >
-                Find on map
-              </button>
-            </div>
-            <div>
-              <label className="text-sm font-semibold text-slate-700">Drop area</label>
-              <input
-                value={dropArea}
-                onChange={(event) => setDropArea(event.target.value)}
-                placeholder="e.g. Gulshan"
-                className="mt-2 w-full rounded-lg border border-brand-200 p-2"
-              />
-              <button
-                type="button"
-                onClick={() => geocodeArea(dropArea, "drop")}
-                className="mt-2 text-xs font-semibold text-brand-700"
-              >
-                Find on map
-              </button>
-            </div>
-          </div>
-
-          {geoError && <p className="text-xs text-rose-600">{geoError}</p>}
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
               <label className="text-sm font-semibold text-slate-700">Distance (km)</label>
               <input
                 type="number"
                 value={distanceKm ? distanceKm.toFixed(2) : ""}
                 onChange={(event) => setDistanceKm(Number(event.target.value))}
-                placeholder="Auto from map"
+                placeholder="Enter distance"
                 className="mt-2 w-full rounded-lg border border-brand-200 p-2"
               />
-              <p className="text-xs text-slate-500 mt-1">{distanceNote}</p>
             </div>
             <button
               type="button"
@@ -279,14 +222,6 @@ export function EstimatorClient({ configs, lang }: Props) {
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-2xl bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-slate-900">Route selection</h2>
-            <div className="mt-4 space-y-4">
-              <MapPicker label={`${dictionary.pickup} pin`} value={pickup} onChange={setPickup} />
-              <MapPicker label={`${dictionary.drop} pin`} value={drop} onChange={setDrop} />
-            </div>
-          </div>
-
           <div className="rounded-2xl bg-white p-6 shadow-sm">
             <h2 className="text-lg font-semibold text-slate-900">Fare estimate</h2>
             {fare ? (

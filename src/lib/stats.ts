@@ -1,4 +1,4 @@
-import { City, DistanceBucket, TimeOfDay } from "@prisma/client";
+import { City, DistanceBucket, TimeOfDay, VehicleType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 const CACHE_MINUTES = 10;
@@ -8,16 +8,21 @@ function isFresh(updatedAt: Date) {
   return updatedAt.getTime() >= cutoff;
 }
 
-export async function getCommunityStats(city: City, bucket: DistanceBucket, timeOfDay: TimeOfDay) {
+export async function getCommunityStats(
+  city: City,
+  vehicleType: VehicleType,
+  bucket: DistanceBucket,
+  timeOfDay: TimeOfDay
+) {
   const cached = await prisma.distanceBucketStat.findUnique({
-    where: { city_bucket_timeOfDay: { city, bucket, timeOfDay } }
+    where: { city_vehicleType_bucket_timeOfDay: { city, vehicleType, bucket, timeOfDay } }
   });
   if (cached && isFresh(cached.updatedAt)) {
     return cached;
   }
 
   const reports = await prisma.fareReport.findMany({
-    where: { city, timeOfDay, distanceKm: bucketFilter(bucket) },
+    where: { city, vehicleType, timeOfDay, distanceKm: bucketFilter(bucket) },
     select: { farePaid: true }
   });
 
@@ -31,9 +36,9 @@ export async function getCommunityStats(city: City, bucket: DistanceBucket, time
   const iqrHigh = percentile(values, 0.75);
 
   const stat = await prisma.distanceBucketStat.upsert({
-    where: { city_bucket_timeOfDay: { city, bucket, timeOfDay } },
+    where: { city_vehicleType_bucket_timeOfDay: { city, vehicleType, bucket, timeOfDay } },
     update: { medianFare, iqrLow, iqrHigh, count: values.length },
-    create: { city, bucket, timeOfDay, medianFare, iqrLow, iqrHigh, count: values.length }
+    create: { city, vehicleType, bucket, timeOfDay, medianFare, iqrLow, iqrHigh, count: values.length }
   });
 
   return stat;

@@ -18,6 +18,7 @@ export default async function ReportPage() {
 
     const payload = {
       city: formData.get("city"),
+      vehicleType: formData.get("vehicleType"),
       pickupArea: formData.get("pickupArea"),
       dropArea: formData.get("dropArea"),
       distanceKm: Number(formData.get("distanceKm")),
@@ -28,11 +29,7 @@ export default async function ReportPage() {
       luggage: formData.get("luggage") === "on",
       traffic: formData.get("traffic") === "on",
       negotiation: formData.get("negotiation"),
-      notes: formData.get("notes") || undefined,
-      pickupLat: formData.get("pickupLat") ? Number(formData.get("pickupLat")) : undefined,
-      pickupLng: formData.get("pickupLng") ? Number(formData.get("pickupLng")) : undefined,
-      dropLat: formData.get("dropLat") ? Number(formData.get("dropLat")) : undefined,
-      dropLng: formData.get("dropLng") ? Number(formData.get("dropLng")) : undefined
+      notes: formData.get("notes") || undefined
     };
 
     const parsed = reportSchema.safeParse(payload);
@@ -60,6 +57,7 @@ export default async function ReportPage() {
         userId: session.user.id,
         pickupArea: parsed.data.pickupArea,
         dropArea: parsed.data.dropArea,
+        vehicleType: parsed.data.vehicleType,
         farePaid: parsed.data.farePaid,
         distanceKm: parsed.data.distanceKm,
         createdAt: { gte: new Date(Date.now() - 10 * 60 * 1000) }
@@ -74,6 +72,7 @@ export default async function ReportPage() {
       data: {
         userId: session.user.id,
         city: parsed.data.city,
+        vehicleType: parsed.data.vehicleType,
         pickupArea: parsed.data.pickupArea,
         dropArea: parsed.data.dropArea,
         distanceKm: parsed.data.distanceKm,
@@ -84,11 +83,7 @@ export default async function ReportPage() {
         luggage: parsed.data.luggage,
         traffic: parsed.data.traffic,
         negotiation: parsed.data.negotiation,
-        notes: parsed.data.notes || null,
-        pickupLat: parsed.data.pickupLat,
-        pickupLng: parsed.data.pickupLng,
-        dropLat: parsed.data.dropLat,
-        dropLng: parsed.data.dropLng
+        notes: parsed.data.notes || null
       }
     });
 
@@ -112,7 +107,7 @@ export default async function ReportPage() {
       <h1 className="text-2xl font-bold text-brand-900">Submit a fare report</h1>
       <p className="text-sm text-slate-600">Share what you paid so the community can see fair ranges.</p>
       <form action={submitReport} className="mt-6 grid gap-4">
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-3">
           <div>
             <label className="text-sm font-semibold">City</label>
             <select name="city" className="mt-2 w-full rounded-lg border border-brand-200 p-2">
@@ -120,6 +115,19 @@ export default async function ReportPage() {
               <option value="CHATTOGRAM">Chattogram</option>
               <option value="SYLHET">Sylhet</option>
               <option value="KHULNA">Khulna</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-semibold">Vehicle type</label>
+            <select name="vehicleType" className="mt-2 w-full rounded-lg border border-brand-200 p-2">
+              <option value="RICKSHAW">Rickshaw</option>
+              <option value="CNG">CNG</option>
+              <option value="AUTO_RICKSHAW">Auto-rickshaw</option>
+              <option value="BIKE">Bike</option>
+              <option value="CAR">Car</option>
+              <option value="MICROBUS">Microbus</option>
+              <option value="BUS">Bus</option>
               <option value="OTHER">Other</option>
             </select>
           </div>

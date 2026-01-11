@@ -13,6 +13,7 @@ export const registerSchema = z.object({
 
 export const estimateSchema = z.object({
   city: z.enum(["DHAKA", "CHATTOGRAM", "SYLHET", "KHULNA", "OTHER"]),
+  vehicleType: z.enum(["RICKSHAW", "CNG", "AUTO_RICKSHAW", "BIKE", "CAR", "MICROBUS", "BUS", "OTHER"]),
   distanceKm: z.number().positive().max(50),
   timeOfDay: z.enum(["MORNING", "AFTERNOON", "EVENING", "NIGHT"]),
   weather: z.enum(["CLEAR", "RAIN"]).optional(),
@@ -23,6 +24,7 @@ export const estimateSchema = z.object({
 
 export const reportSchema = z.object({
   city: z.enum(["DHAKA", "CHATTOGRAM", "SYLHET", "KHULNA", "OTHER"]),
+  vehicleType: z.enum(["RICKSHAW", "CNG", "AUTO_RICKSHAW", "BIKE", "CAR", "MICROBUS", "BUS", "OTHER"]),
   pickupArea: z.string().min(2).max(80),
   dropArea: z.string().min(2).max(80),
   distanceKm: z.number().positive().max(50),
@@ -33,9 +35,5 @@ export const reportSchema = z.object({
   luggage: z.boolean(),
   traffic: z.boolean(),
   negotiation: z.enum(["EASY", "MEDIUM", "HARD"]),
-  notes: z.string().max(200).optional(),
-  pickupLat: z.number().optional(),
-  pickupLng: z.number().optional(),
-  dropLat: z.number().optional(),
-  dropLng: z.number().optional()
+  notes: z.string().max(200).optional()
 });

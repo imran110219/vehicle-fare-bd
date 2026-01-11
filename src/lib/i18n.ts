@@ -3,9 +3,7 @@ export type Lang = "en" | "bn";
 type Dictionary = Record<string, string>;
 
 const en: Dictionary = {
-  estimatorTitle: "Fare Estimator",
-  pickup: "Pickup",
-  drop: "Drop",
+  estimatorTitle: "Vehicle Fare Estimator",
   estimate: "Estimate Fare",
   typicalRange: "Typical range",
   communityRange: "Community range",
@@ -13,9 +11,7 @@ const en: Dictionary = {
 };
 
 const bn: Dictionary = {
-  estimatorTitle: "ভাড়া নির্ণায়ক",
-  pickup: "পিকআপ",
-  drop: "ড্রপ",
+  estimatorTitle: "যানবাহন ভাড়া নির্ণায়ক",
   estimate: "ভাড়া নির্ণয় করুন",
   typicalRange: "সাধারণ পরিসীমা",
   communityRange: "কমিউনিটি পরিসীমা",

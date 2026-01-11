@@ -1,6 +1,18 @@
 import { calculateFare } from "@/lib/fare";
 
-const config = { id: "1", city: "DHAKA", baseFare: 30, perKmRate: 20, createdAt: new Date(), updatedAt: new Date() };
+const config = {
+  id: "1",
+  city: "DHAKA",
+  vehicleType: "RICKSHAW",
+  baseFare: 30,
+  perKmRate: 20,
+  morningMultiplier: 1,
+  afternoonMultiplier: 1,
+  eveningMultiplier: 1.05,
+  nightMultiplier: 1.15,
+  createdAt: new Date(),
+  updatedAt: new Date()
+};
 
 describe("calculateFare", () => {
   it("applies base and distance rates", () => {

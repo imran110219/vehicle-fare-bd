@@ -7,7 +7,7 @@ export async function Nav() {
   return (
     <nav className="flex items-center justify-between px-4 py-3 bg-white shadow-sm">
       <div className="flex items-center gap-4 text-sm font-semibold">
-        <Link href="/" className="text-brand-700">Rickshaw Fare Checker (BD)</Link>
+        <Link href="/" className="text-brand-700">Vehicle Fare Checker (BD)</Link>
         <Link href="/report" className="text-slate-600 hover:text-slate-900">Report</Link>
         <Link href="/insights" className="text-slate-600 hover:text-slate-900">Insights</Link>
         <Link href="/profile" className="text-slate-600 hover:text-slate-900">Profile</Link>

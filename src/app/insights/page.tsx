@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getCommunityStats } from "@/lib/stats";
-import { formatBucket, getDistanceBucket } from "@/lib/buckets";
-import { City, DistanceBucket, TimeOfDay } from "@prisma/client";
+import { formatBucket } from "@/lib/buckets";
+import { City, DistanceBucket, TimeOfDay, VehicleType } from "@prisma/client";
 
 const timeOptions: TimeOfDay[] = ["MORNING", "AFTERNOON", "EVENING", "NIGHT"];
 const bucketOptions: DistanceBucket[] = [
@@ -16,13 +16,19 @@ const bucketOptions: DistanceBucket[] = [
 export default async function InsightsPage({
   searchParams
 }: {
-  searchParams: { city?: string; timeOfDay?: string; bucket?: string };
+  searchParams: { city?: string; vehicleType?: string; timeOfDay?: string; bucket?: string };
 }) {
   const city = (searchParams.city as City) || City.DHAKA;
+  const vehicleType = (searchParams.vehicleType as VehicleType) || VehicleType.RICKSHAW;
   const timeOfDay = (searchParams.timeOfDay as TimeOfDay) || "MORNING";
   const bucket = (searchParams.bucket as DistanceBucket) || "KM_0_1";
 
-  const stats = await getCommunityStats(city, bucket, timeOfDay);
+  const availableConfigs = await prisma.vehicleFareConfig.findMany({
+    select: { city: true, vehicleType: true },
+    orderBy: [{ city: "asc" }, { vehicleType: "asc" }]
+  });
+
+  const stats = await getCommunityStats(city, vehicleType, bucket, timeOfDay);
 
   return (
     <div className="space-y-6">
@@ -31,15 +37,29 @@ export default async function InsightsPage({
         <p className="text-sm text-slate-600">See aggregated fares based on real submissions.</p>
       </header>
 
-      <form className="grid gap-4 rounded-2xl bg-white p-6 shadow-sm sm:grid-cols-3">
+      <form className="grid gap-4 rounded-2xl bg-white p-6 shadow-sm sm:grid-cols-4">
         <div>
           <label className="text-sm font-semibold">City</label>
           <select name="city" defaultValue={city} className="mt-2 w-full rounded-lg border border-brand-200 p-2">
-            <option value="DHAKA">Dhaka</option>
-            <option value="CHATTOGRAM">Chattogram</option>
-            <option value="SYLHET">Sylhet</option>
-            <option value="KHULNA">Khulna</option>
-            <option value="OTHER">Other</option>
+            {Array.from(new Set(availableConfigs.map((item) => item.city))).map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="text-sm font-semibold">Vehicle type</label>
+          <select
+            name="vehicleType"
+            defaultValue={vehicleType}
+            className="mt-2 w-full rounded-lg border border-brand-200 p-2"
+          >
+            {Array.from(new Set(availableConfigs.map((item) => item.vehicleType))).map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
           </select>
         </div>
         <div>
@@ -62,7 +82,7 @@ export default async function InsightsPage({
             ))}
           </select>
         </div>
-        <button type="submit" className="rounded-lg bg-brand-600 px-4 py-2 text-white sm:col-span-3">
+        <button type="submit" className="rounded-lg bg-brand-600 px-4 py-2 text-white sm:col-span-4">
           View stats
         </button>
       </form>

@@ -1,7 +1,7 @@
-import type { CityConfig } from "@prisma/client";
+import type { VehicleFareConfig } from "@prisma/client";
 
 export type FareInput = {
-  config: CityConfig;
+  config: VehicleFareConfig;
   distanceKm: number;
   timeOfDay: "MORNING" | "AFTERNOON" | "EVENING" | "NIGHT";
   weather?: "CLEAR" | "RAIN";
@@ -22,10 +22,10 @@ export type FareResult = {
 export function calculateFare(input: FareInput): FareResult {
   const baseFare = input.config.baseFare;
   const distanceFare = input.config.perKmRate * input.distanceKm;
-  let multiplier = 1;
+  const timeMultiplier = getTimeMultiplier(input.config, input.timeOfDay);
+  let multiplier = timeMultiplier;
   const notes: string[] = [];
 
-  if (input.timeOfDay === "NIGHT") multiplier += 0.15;
   if (input.weather === "RAIN") multiplier += 0.2;
   if (input.traffic) multiplier += 0.1;
   if (input.luggage) multiplier += 0.1;
@@ -35,7 +35,9 @@ export function calculateFare(input: FareInput): FareResult {
   const typicalLow = roundTo(totalFare * 0.85, 0);
   const typicalHigh = roundTo(totalFare * 1.15, 0);
 
-  notes.push("Typical range reflects +/-15% of the computed fare.");
+  notes.push(
+    `Typical range reflects +/-15% of the computed fare. Time-of-day multiplier: ${timeMultiplier.toFixed(2)}x.`
+  );
 
   return {
     baseFare,
@@ -51,4 +53,19 @@ export function calculateFare(input: FareInput): FareResult {
 export function roundTo(value: number, digits: number) {
   const factor = 10 ** digits;
   return Math.round(value * factor) / factor;
+}
+
+function getTimeMultiplier(config: VehicleFareConfig, timeOfDay: FareInput["timeOfDay"]) {
+  switch (timeOfDay) {
+    case "MORNING":
+      return config.morningMultiplier;
+    case "AFTERNOON":
+      return config.afternoonMultiplier;
+    case "EVENING":
+      return config.eveningMultiplier;
+    case "NIGHT":
+      return config.nightMultiplier;
+    default:
+      return 1;
+  }
 }

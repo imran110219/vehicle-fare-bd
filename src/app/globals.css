@@ -9,8 +9,3 @@
 body {
   @apply bg-brand-50 text-slate-900;
 }
-
-.map-container {
-  height: 320px;
-  width: 100%;
-}

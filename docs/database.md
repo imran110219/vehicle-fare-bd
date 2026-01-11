@@ -10,21 +10,21 @@ Prisma is configured via `prisma.config.ts` (Prisma 7). The schema lives at `pri
 ### Account / Session / VerificationToken
 - NextAuth tables for provider accounts and sessions.
 
-### CityConfig
-- Per-city pricing rules: base fare and per-km rate.
+### VehicleType
+- Enum defining supported vehicle types across configs and reports.
+
+### VehicleFareConfig
+- Per-city + vehicle pricing rules: base fare, per-km rate, and time-of-day multipliers.
 
 ### FareReport
-- User-submitted fares with distance, fare paid, conditions, and optional coordinates.
+- User-submitted fares with distance, fare paid, vehicle type, and conditions.
 - Duplicate checks and daily rate limiting are enforced at the app layer.
 
-### GeocodeCache
-- Cached geocoding results keyed by normalized query.
-
 ### DistanceBucketStat
-- Aggregated community stats by city, distance bucket, and time of day.
+- Aggregated community stats by city, vehicle type, distance bucket, and time of day.
 - Updated when fresh data is required.
 
 ## Indexes and Constraints
-- Unique city in `CityConfig`.
-- Composite unique key on `DistanceBucketStat (city, bucket, timeOfDay)`.
+- Composite unique key on `VehicleFareConfig (city, vehicleType)`.
+- Composite unique key on `DistanceBucketStat (city, vehicleType, bucket, timeOfDay)`.
 - Indexes on `FareReport` for city and distance bucket queries.

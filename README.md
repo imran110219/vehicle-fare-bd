@@ -1,20 +1,18 @@
-# Rickshaw Fare BD
+# Vehicle Fare BD
 
-Community-driven rickshaw fare estimator for Bangladesh. It combines city pricing rules, optional routing, and real-world submissions to help riders and drivers agree on fair fares.
+Community-driven vehicle fare estimator for Bangladesh. It combines city and vehicle pricing rules with real-world submissions to help riders and drivers agree on fair fares.
 
 ## Features
-- Fare estimator with time-of-day, weather, traffic, and luggage multipliers
-- Map-based pickup/drop selection with distance estimation
+- Fare estimator with vehicle type, time-of-day, weather, traffic, and luggage multipliers
 - Community insights from real submissions (median and IQR)
 - Authenticated fare reporting with basic spam controls
-- Admin view to update city pricing configs
+- Admin view to update city + vehicle pricing configs
 - English/Bangla UI labels
 
 ## Tech Stack
 - Next.js App Router (React 18)
 - Prisma ORM + Postgres
 - NextAuth (credentials + optional Google)
-- MapLibre GL
 - Zod for validation
 
 ## Quick Start
@@ -25,11 +23,9 @@ npm install
 
 2) Create a `.env` file (example)
 ```
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/rickshaw_fare
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/vehicle_fare
 NEXTAUTH_SECRET=change-me
 NEXTAUTH_URL=http://localhost:3000
-ALLOW_NOMINATIM=false
-ALLOW_OSRM=false
 ```
 
 3) Generate Prisma client and run migrations
