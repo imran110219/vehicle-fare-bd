@@ -4,7 +4,7 @@
 - generic [active] [ref=e1]:
   - navigation [ref=e2]:
     - generic [ref=e3]:
-      - link "Rickshaw Fare Checker (BD)" [ref=e4] [cursor=pointer]:
+      - link "Vehicle Fare Checker (BD)" [ref=e4] [cursor=pointer]:
         - /url: /
       - link "Report" [ref=e5] [cursor=pointer]:
         - /url: /report
@@ -19,9 +19,66 @@
   - button "বাংলা" [ref=e13] [cursor=pointer]
   - main [ref=e14]:
     - generic [ref=e15]:
-      - heading "Sign in required" [level=1] [ref=e16]
-      - paragraph [ref=e17]: Please sign in to submit fare reports.
-      - link "Sign in" [ref=e18] [cursor=pointer]:
-        - /url: /login
-  - alert [ref=e19]
+      - generic [ref=e16]:
+        - heading "Vehicle Fare Estimator" [level=1] [ref=e17]
+        - paragraph [ref=e18]: Estimate fair vehicle fares in Bangladesh using city pricing and community data.
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - generic [ref=e21]:
+            - generic [ref=e22]:
+              - text: City
+              - combobox [ref=e23]:
+                - option "Dhaka" [selected]
+                - option "Chattogram"
+                - option "Sylhet"
+                - option "Khulna"
+                - option "Other"
+            - generic [ref=e24]:
+              - text: Vehicle type
+              - combobox [ref=e25]:
+                - option "Rickshaw" [selected]
+                - option "CNG"
+                - option "Auto-rickshaw"
+                - option "Bike"
+                - option "Car"
+                - option "Microbus"
+                - option "Bus"
+                - option "Other"
+            - generic [ref=e26]:
+              - text: Time of day
+              - combobox [ref=e27]:
+                - option "Morning" [selected]
+                - option "Afternoon"
+                - option "Evening"
+                - option "Night"
+            - generic [ref=e28]:
+              - text: Weather
+              - combobox [ref=e29]:
+                - option "Optional" [selected]
+                - option "Clear"
+                - option "Rain"
+            - generic [ref=e30]:
+              - text: Passengers
+              - spinbutton [ref=e31]: "1"
+          - generic [ref=e32]:
+            - generic [ref=e33]:
+              - checkbox "Luggage" [ref=e34]
+              - text: Luggage
+            - generic [ref=e35]:
+              - checkbox "Heavy traffic" [ref=e36]
+              - text: Heavy traffic
+          - generic [ref=e37]:
+            - generic [ref=e38]:
+              - text: Distance (km)
+              - spinbutton [ref=e39]
+            - button "Estimate Fare" [ref=e40] [cursor=pointer]
+        - generic [ref=e42]:
+          - heading "Fare estimate" [level=2] [ref=e43]
+          - generic [ref=e44]:
+            - paragraph [ref=e45]: "Base fare: BDT 30"
+            - paragraph [ref=e46]: "Distance fare: BDT 0"
+            - paragraph [ref=e47]: "Multiplier: 1.05x"
+            - paragraph [ref=e48]: "Total: BDT 32"
+            - paragraph [ref=e49]: "Typical range: BDT 27 - 37"
+            - paragraph [ref=e50]: "Typical range reflects +/-15% of the computed fare. Time-of-day multiplier: 1.00x."
 ```

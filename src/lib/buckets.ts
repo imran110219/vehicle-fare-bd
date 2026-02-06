@@ -27,3 +27,22 @@ export function formatBucket(bucket: DistanceBucket) {
       return "Unknown";
   }
 }
+
+export function bucketToDistanceKm(bucket: DistanceBucket) {
+  switch (bucket) {
+    case DistanceBucket.KM_0_1:
+      return 0.5;
+    case DistanceBucket.KM_1_2:
+      return 1.5;
+    case DistanceBucket.KM_2_3:
+      return 2.5;
+    case DistanceBucket.KM_3_5:
+      return 4;
+    case DistanceBucket.KM_5_8:
+      return 6.5;
+    case DistanceBucket.KM_8_PLUS:
+      return 9;
+    default:
+      return 1;
+  }
+}

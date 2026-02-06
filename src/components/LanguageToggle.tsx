@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useEffect, useTransition } from "react";
 
 type Props = {
   currentLang: "en" | "bn";
@@ -10,9 +10,26 @@ type Props = {
 export function LanguageToggle({ currentLang, action }: Props) {
   const [isPending, startTransition] = useTransition();
 
+  useEffect(() => {
+    const stored = localStorage.getItem("lang");
+    if (stored === "en" || stored === "bn") {
+      if (stored !== currentLang) {
+        const formData = new FormData();
+        formData.set("lang", stored);
+        startTransition(() => action(formData));
+      }
+    } else {
+      localStorage.setItem("lang", currentLang);
+    }
+  }, [currentLang, action, startTransition]);
+
   return (
     <form
       action={(formData) => {
+        const nextLang = formData.get("lang");
+        if (nextLang === "en" || nextLang === "bn") {
+          localStorage.setItem("lang", nextLang);
+        }
         startTransition(() => action(formData));
       }}
       className="flex items-center gap-2"

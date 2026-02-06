@@ -26,4 +26,11 @@ test("estimate -> login -> submit report -> profile", async ({ page }) => {
 
   await page.goto("/profile");
   await expect(page.getByText("Dhanmondi")).toBeVisible();
+  await expect(page.getByText(/You paid vs estimated/i)).toBeVisible();
+});
+
+test("unauth user can view insights page (public stats or no data)", async ({ page }) => {
+  await page.goto("/insights");
+  await expect(page.getByText(/Community insights/i)).toBeVisible();
+  await expect(page.getByText(/No community data|Median:/i)).toBeVisible();
 });

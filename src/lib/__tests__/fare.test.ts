@@ -2,7 +2,7 @@ import { calculateFare } from "@/lib/fare";
 
 const config = {
   id: "1",
-  city: "DHAKA",
+  city: "KHULNA",
   vehicleType: "RICKSHAW",
   baseFare: 30,
   perKmRate: 20,

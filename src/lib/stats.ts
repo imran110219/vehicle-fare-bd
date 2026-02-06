@@ -1,10 +1,9 @@
 import { City, DistanceBucket, TimeOfDay, VehicleType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-
-const CACHE_MINUTES = 10;
+import { fareConfig } from "./config";
 
 function isFresh(updatedAt: Date) {
-  const cutoff = Date.now() - CACHE_MINUTES * 60 * 1000;
+  const cutoff = Date.now() - fareConfig.statsCacheDurationMinutes * 60 * 1000;
   return updatedAt.getTime() >= cutoff;
 }
 
@@ -42,6 +41,26 @@ export async function getCommunityStats(
   });
 
   return stat;
+}
+
+export async function getCommunityStatsPublic(
+  city: City,
+  vehicleType: VehicleType,
+  bucket: DistanceBucket,
+  timeOfDay: TimeOfDay
+) {
+  const stats = await getCommunityStats(city, vehicleType, bucket, timeOfDay);
+  if (!stats || stats.count < 5) {
+    return null;
+  }
+
+  return {
+    medianFare: stats.medianFare,
+    iqrLow: stats.iqrLow,
+    iqrHigh: stats.iqrHigh,
+    count: stats.count,
+    updatedAt: stats.updatedAt
+  };
 }
 
 export function bucketFilter(bucket: DistanceBucket) {

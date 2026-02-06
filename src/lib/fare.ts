@@ -1,4 +1,5 @@
 import type { VehicleFareConfig } from "@prisma/client";
+import { demandPressureByTimeOfDay, demandPressureCities, fareConfig } from "./config";
 
 export type FareInput = {
   config: VehicleFareConfig;
@@ -25,18 +26,22 @@ export function calculateFare(input: FareInput): FareResult {
   const timeMultiplier = getTimeMultiplier(input.config, input.timeOfDay);
   let multiplier = timeMultiplier;
   const notes: string[] = [];
+  const demandPressure = getDemandPressure(input.config.city, input.timeOfDay);
 
-  if (input.weather === "RAIN") multiplier += 0.2;
-  if (input.traffic) multiplier += 0.1;
-  if (input.luggage) multiplier += 0.1;
+  if (input.weather === "RAIN") multiplier += fareConfig.rainMultiplier;
+  if (input.traffic) multiplier += fareConfig.trafficMultiplier;
+  if (input.luggage) multiplier += fareConfig.luggageMultiplier;
+  if (demandPressure > 0) multiplier += demandPressure;
 
   const rawTotal = (baseFare + distanceFare) * multiplier;
   const totalFare = roundTo(rawTotal, 0);
-  const typicalLow = roundTo(totalFare * 0.85, 0);
-  const typicalHigh = roundTo(totalFare * 1.15, 0);
+
+  const rangePercent = fareConfig.typicalRangePercent;
+  const typicalLow = roundTo(totalFare * (1 - rangePercent), 0);
+  const typicalHigh = roundTo(totalFare * (1 + rangePercent), 0);
 
   notes.push(
-    `Typical range reflects +/-15% of the computed fare. Time-of-day multiplier: ${timeMultiplier.toFixed(2)}x.`
+    `Typical range reflects +/-${Math.round(rangePercent * 100)}% of the computed fare. Time-of-day multiplier: ${timeMultiplier.toFixed(2)}x.`
   );
 
   return {
@@ -68,4 +73,9 @@ function getTimeMultiplier(config: VehicleFareConfig, timeOfDay: FareInput["time
     default:
       return 1;
   }
+}
+
+function getDemandPressure(city: VehicleFareConfig["city"], timeOfDay: FareInput["timeOfDay"]) {
+  if (!demandPressureCities.includes(city)) return 0;
+  return demandPressureByTimeOfDay[timeOfDay] ?? 0;
 }

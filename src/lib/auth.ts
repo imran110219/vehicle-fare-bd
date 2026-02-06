@@ -1,5 +1,6 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type NextAuthOptions, getServerSession } from "next-auth";
+import type { Adapter } from "next-auth/adapters";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
@@ -7,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { loginSchema } from "@/lib/validation";
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  adapter: PrismaAdapter(prisma) as Adapter,
   session: {
     strategy: "jwt"
   },
@@ -34,7 +35,6 @@ export const authOptions: NextAuthOptions = {
     jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        // @ts-expect-error role extension
         token.role = user.role;
       }
       return token;
@@ -42,7 +42,6 @@ export const authOptions: NextAuthOptions = {
     session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-        // @ts-expect-error role extension
         session.user.role = token.role as "USER" | "ADMIN";
       }
       return session;

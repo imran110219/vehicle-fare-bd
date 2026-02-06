@@ -13,10 +13,26 @@ enum Role {
 }
 
 enum City {
-  DHAKA
+  BARISHAL
+  BOGURA
   CHATTOGRAM
-  SYLHET
+  CUMILLA
+  DHAKA
+  DINAJPUR
+  FENI
+  GAZIPUR
+  JASHORE
   KHULNA
+  KUSHTIA
+  MYMENSINGH
+  NARAYANGANJ
+  NOAKHALI
+  PABNA
+  RAJSHAHI
+  RANGPUR
+  SAVAR
+  SYLHET
+  TANGAIL
   OTHER
 }
 
@@ -134,6 +150,9 @@ model FareReport {
   dropArea        String
   distanceKm      Float
   farePaid        Int
+  estimatedFareAtTime Int?
+  estimatorVersion String              @default("v1")
+  seedKey         String?             @unique
   timeOfDay       TimeOfDay
   weather         Weather?
   passengerCount  Int

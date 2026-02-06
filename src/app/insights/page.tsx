@@ -1,7 +1,17 @@
 import { prisma } from "@/lib/prisma";
-import { getCommunityStats } from "@/lib/stats";
 import { formatBucket } from "@/lib/buckets";
 import { City, DistanceBucket, TimeOfDay, VehicleType } from "@prisma/client";
+import { auth } from "@/lib/auth";
+import { cookies } from "next/headers";
+import {
+  getCityLabel,
+  getDistanceBucketLabel,
+  getDictionary,
+  getTimeOfDayLabel,
+  getVehicleTypeLabel,
+  type Lang
+} from "@/lib/i18n";
+import { InsightsStatsClient } from "@/components/InsightsStatsClient";
 
 const timeOptions: TimeOfDay[] = ["MORNING", "AFTERNOON", "EVENING", "NIGHT"];
 const bucketOptions: DistanceBucket[] = [
@@ -13,15 +23,20 @@ const bucketOptions: DistanceBucket[] = [
   "KM_8_PLUS"
 ];
 
-export default async function InsightsPage({
-  searchParams
-}: {
-  searchParams: { city?: string; vehicleType?: string; timeOfDay?: string; bucket?: string };
-}) {
-  const city = (searchParams.city as City) || City.DHAKA;
-  const vehicleType = (searchParams.vehicleType as VehicleType) || VehicleType.RICKSHAW;
-  const timeOfDay = (searchParams.timeOfDay as TimeOfDay) || "MORNING";
-  const bucket = (searchParams.bucket as DistanceBucket) || "KM_0_1";
+type Props = {
+  searchParams: Promise<{ city?: string; vehicleType?: string; timeOfDay?: string; bucket?: string }>;
+};
+
+export default async function InsightsPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const city = (params.city as City) || City.DHAKA;
+  const vehicleType = (params.vehicleType as VehicleType) || VehicleType.RICKSHAW;
+  const timeOfDay = (params.timeOfDay as TimeOfDay) || "MORNING";
+  const bucket = (params.bucket as DistanceBucket) || "KM_0_1";
+  const session = await auth();
+  const cookieStore = await cookies();
+  const lang = (cookieStore.get("lang")?.value as Lang) || "en";
+  const dictionary = getDictionary(lang);
 
   const availableConfigs = await prisma.vehicleFareConfig.findMany({
     select: { city: true, vehicleType: true },
@@ -30,28 +45,26 @@ export default async function InsightsPage({
   const cityOptions = Array.from(new Set(availableConfigs.map((item) => item.city)));
   const vehicleOptions = Array.from(new Set(availableConfigs.map((item) => item.vehicleType)));
 
-  const stats = await getCommunityStats(city, vehicleType, bucket, timeOfDay);
-
   return (
     <div className="space-y-6">
       <header className="rounded-2xl bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-bold text-brand-900">Community insights</h1>
-        <p className="text-sm text-slate-600">See aggregated fares based on real submissions.</p>
+        <h1 className="text-2xl font-bold text-brand-900">{dictionary.communityInsightsTitle}</h1>
+        <p className="text-sm text-slate-600">{dictionary.communityInsightsSubtitle}</p>
       </header>
 
       <form className="grid gap-4 rounded-2xl bg-white p-6 shadow-sm sm:grid-cols-4">
         <div>
-          <label className="text-sm font-semibold">City</label>
+          <label className="text-sm font-semibold">{dictionary.cityLabel}</label>
           <select name="city" defaultValue={city} className="mt-2 w-full rounded-lg border border-brand-200 p-2">
             {(cityOptions.length ? cityOptions : Object.values(City)).map((item) => (
               <option key={item} value={item}>
-                {item}
+                {getCityLabel(lang, item)}
               </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="text-sm font-semibold">Vehicle type</label>
+          <label className="text-sm font-semibold">{dictionary.vehicleTypeLabel}</label>
           <select
             name="vehicleType"
             defaultValue={vehicleType}
@@ -59,49 +72,45 @@ export default async function InsightsPage({
           >
             {(vehicleOptions.length ? vehicleOptions : Object.values(VehicleType)).map((item) => (
               <option key={item} value={item}>
-                {item}
+                {getVehicleTypeLabel(lang, item)}
               </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="text-sm font-semibold">Time of day</label>
+          <label className="text-sm font-semibold">{dictionary.timeOfDayLabel}</label>
           <select name="timeOfDay" defaultValue={timeOfDay} className="mt-2 w-full rounded-lg border border-brand-200 p-2">
             {timeOptions.map((option) => (
               <option key={option} value={option}>
-                {option}
+                {getTimeOfDayLabel(lang, option)}
               </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="text-sm font-semibold">Distance bucket</label>
+          <label className="text-sm font-semibold">{dictionary.distanceBucketLabel}</label>
           <select name="bucket" defaultValue={bucket} className="mt-2 w-full rounded-lg border border-brand-200 p-2">
             {bucketOptions.map((option) => (
               <option key={option} value={option}>
-                {formatBucket(option)}
+                {getDistanceBucketLabel(lang, option) || formatBucket(option)}
               </option>
             ))}
           </select>
         </div>
         <button type="submit" className="rounded-lg bg-brand-600 px-4 py-2 text-white sm:col-span-4">
-          View stats
+          {dictionary.viewStats}
         </button>
       </form>
 
       <section className="rounded-2xl bg-white p-6 shadow-sm">
-        {stats ? (
-          <div className="space-y-2 text-sm text-slate-700">
-            <p className="text-lg font-semibold text-brand-800">Median: BDT {stats.medianFare.toFixed(0)}</p>
-            <p>
-              IQR: BDT {stats.iqrLow.toFixed(0)} - {stats.iqrHigh.toFixed(0)}
-            </p>
-            <p>Total reports: {stats.count}</p>
-            <p className="text-xs text-slate-500">Cached for 10 minutes.</p>
-          </div>
-        ) : (
-          <p className="text-sm text-slate-500">No community data for this filter yet.</p>
-        )}
+        <InsightsStatsClient
+          city={city}
+          vehicleType={vehicleType}
+          timeOfDay={timeOfDay}
+          bucket={bucket}
+          isAuthed={Boolean(session?.user)}
+          lang={lang}
+        />
       </section>
     </div>
   );

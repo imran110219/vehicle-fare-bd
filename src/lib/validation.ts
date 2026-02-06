@@ -12,7 +12,29 @@ export const registerSchema = z.object({
 });
 
 export const estimateSchema = z.object({
-  city: z.enum(["DHAKA", "CHATTOGRAM", "SYLHET", "KHULNA", "OTHER"]),
+  city: z.enum([
+    "DHAKA",
+    "CHATTOGRAM",
+    "KHULNA",
+    "RAJSHAHI",
+    "SYLHET",
+    "GAZIPUR",
+    "NARAYANGANJ",
+    "MYMENSINGH",
+    "BARISHAL",
+    "CUMILLA",
+    "RANGPUR",
+    "BOGURA",
+    "SAVAR",
+    "KUSHTIA",
+    "JASHORE",
+    "TANGAIL",
+    "DINAJPUR",
+    "FENI",
+    "NOAKHALI",
+    "PABNA",
+    "OTHER"
+  ]),
   vehicleType: z.enum(["RICKSHAW", "CNG", "AUTO_RICKSHAW", "BIKE", "CAR", "MICROBUS", "BUS", "OTHER"]),
   distanceKm: z.number().positive().max(50),
   timeOfDay: z.enum(["MORNING", "AFTERNOON", "EVENING", "NIGHT"]),
@@ -23,7 +45,29 @@ export const estimateSchema = z.object({
 });
 
 export const reportSchema = z.object({
-  city: z.enum(["DHAKA", "CHATTOGRAM", "SYLHET", "KHULNA", "OTHER"]),
+  city: z.enum([
+    "DHAKA",
+    "CHATTOGRAM",
+    "KHULNA",
+    "RAJSHAHI",
+    "SYLHET",
+    "GAZIPUR",
+    "NARAYANGANJ",
+    "MYMENSINGH",
+    "BARISHAL",
+    "CUMILLA",
+    "RANGPUR",
+    "BOGURA",
+    "SAVAR",
+    "KUSHTIA",
+    "JASHORE",
+    "TANGAIL",
+    "DINAJPUR",
+    "FENI",
+    "NOAKHALI",
+    "PABNA",
+    "OTHER"
+  ]),
   vehicleType: z.enum(["RICKSHAW", "CNG", "AUTO_RICKSHAW", "BIKE", "CAR", "MICROBUS", "BUS", "OTHER"]),
   pickupArea: z.string().min(2).max(80),
   dropArea: z.string().min(2).max(80),

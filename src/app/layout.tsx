@@ -10,14 +10,16 @@ export const metadata = {
   description: "Estimate fair vehicle fares and share community insights."
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   async function setLang(formData: FormData) {
     "use server";
     const lang = (formData.get("lang") as Lang) || "en";
-    cookies().set("lang", lang, { path: "/" });
+    const cookieStore = await cookies();
+    cookieStore.set("lang", lang, { path: "/" });
   }
 
-  const lang = (cookies().get("lang")?.value as Lang) || "en";
+  const cookieStore = await cookies();
+  const lang = (cookieStore.get("lang")?.value as Lang) || "en";
 
   return (
     <html lang={lang}>

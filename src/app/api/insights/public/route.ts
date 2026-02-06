@@ -1,16 +1,9 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { City, TimeOfDay, VehicleType } from "@prisma/client";
-import { authOptions } from "@/lib/auth";
 import { getDistanceBucket } from "@/lib/buckets";
-import { getCommunityStats } from "@/lib/stats";
+import { getCommunityStatsPublic } from "@/lib/stats";
 
 export async function GET(request: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   const { searchParams } = new URL(request.url);
   const city = searchParams.get("city") as City | null;
   const vehicleType = searchParams.get("vehicleType") as VehicleType | null;
@@ -22,7 +15,7 @@ export async function GET(request: Request) {
   }
 
   const bucket = getDistanceBucket(distanceKm);
-  const stats = await getCommunityStats(city, vehicleType, bucket, timeOfDay);
+  const stats = await getCommunityStatsPublic(city, vehicleType, bucket, timeOfDay);
 
   return NextResponse.json(stats);
 }

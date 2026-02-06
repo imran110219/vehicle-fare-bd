@@ -7,7 +7,8 @@ export default async function HomePage() {
   const configs = await prisma.vehicleFareConfig.findMany({
     orderBy: [{ city: "asc" }, { vehicleType: "asc" }]
   });
-  const lang = (cookies().get("lang")?.value as Lang) || "en";
+  const cookieStore = await cookies();
+  const lang = (cookieStore.get("lang")?.value as Lang) || "en";
 
   return <EstimatorClient configs={configs} lang={lang} />;
 }
