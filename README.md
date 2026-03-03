@@ -5,6 +5,7 @@ Community-driven vehicle fare estimator for Bangladesh. Combines city pricing ru
 ## Features
 
 - **Fare Estimator** - Calculate fares with time-of-day, weather, traffic, and luggage multipliers
+- **Popular Routes** - Browse frequently traveled routes with aggregated fare statistics and quick estimates
 - **Community Insights** - View aggregated stats (median, IQR) from real submissions
 - **Fare Reporting** - Submit actual fares with spam controls and duplicate detection
 - **Admin Panel** - Manage base fares, per-km rates, and time multipliers
@@ -15,6 +16,7 @@ Community-driven vehicle fare estimator for Bangladesh. Combines city pricing ru
 | Flow | Description | Auth Required |
 |------|-------------|---------------|
 | Estimate | Choose city, vehicle, distance, conditions | No |
+| Popular Routes | View frequently traveled routes and quick estimates | No |
 | Report | Submit what you paid | Yes |
 | Insights | View community stats by filters | No |
 | Admin | Update pricing configurations | Admin |
@@ -132,6 +134,9 @@ tests/             # E2E tests
 | [Database](docs/database.md) | Prisma models and schema |
 | [API](docs/api.md) | HTTP endpoints and responses |
 | [Setup](docs/setup.md) | Detailed setup instructions |
+| [Deployment](docs/deployment.md) | Production deployment guide |
+| [Contributing](CONTRIBUTING.md) | How to contribute to the project |
+| [Popular Routes Feature](POPULAR_ROUTES_FEATURE.md) | Implementation details for popular routes |
 | [Future](docs/future.md) | Roadmap and planned features |
 
 ## License

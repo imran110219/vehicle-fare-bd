@@ -62,6 +62,7 @@
 
 ## Completed
 
+- [x] Popular Routes feature with aggregated statistics and quick estimates
 - [x] Security headers (CSP, X-Frame-Options, etc.)
 - [x] API endpoint authentication (`/api/insights`)
 - [x] Pagination for profile and admin pages

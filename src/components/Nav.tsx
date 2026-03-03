@@ -13,6 +13,7 @@ export async function Nav() {
     <nav className="flex items-center justify-between px-4 py-3 bg-white shadow-sm">
       <div className="flex items-center gap-4 text-sm font-semibold">
         <Link href="/" className="text-brand-700">Vehicle Fare Checker (BD)</Link>
+        <Link href="/routes" className="text-slate-600 hover:text-slate-900">{dictionary.navRoutes || "Routes"}</Link>
         <Link href="/report" className="text-slate-600 hover:text-slate-900">{dictionary.navReport}</Link>
         <Link href="/insights" className="text-slate-600 hover:text-slate-900">{dictionary.navInsights}</Link>
         <Link href="/profile" className="text-slate-600 hover:text-slate-900">{dictionary.navProfile}</Link>

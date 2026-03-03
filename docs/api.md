@@ -4,7 +4,7 @@ All endpoints are implemented in the Next.js App Router under `src/app/api`.
 
 ## Authentication
 
-All API endpoints (except `/api/auth/*`) require authentication via NextAuth session cookies.
+Most API endpoints require authentication via NextAuth session cookies. Public endpoints are marked as such.
 
 ## Security Headers
 
@@ -13,6 +13,77 @@ All responses include security headers:
 - `X-Content-Type-Options: nosniff`
 - `Content-Security-Policy`
 - `Referrer-Policy: strict-origin-when-cross-origin`
+
+---
+
+## GET /api/routes/popular
+
+Returns the most frequently traveled routes with aggregated fare statistics.
+
+### Authentication
+**Not required** - Public endpoint.
+
+### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `city` | enum | No | Filter by city (see City Values below) |
+| `vehicleType` | enum | No | Filter by vehicle type (see Vehicle Type Values below) |
+| `limit` | number | No | Max routes to return (default: 50, max: 100) |
+
+### Response
+
+**Success (200)**
+```json
+{
+  "routes": [
+    {
+      "pickupArea": "Mirpur",
+      "dropArea": "Dhanmondi",
+      "city": "DHAKA",
+      "vehicleType": "CNG",
+      "tripCount": 24,
+      "medianFare": 150,
+      "minFare": 120,
+      "maxFare": 180,
+      "avgDistance": 8.5,
+      "lastReported": "2024-01-15T10:30:00.000Z"
+    }
+  ],
+  "count": 1,
+  "filters": {
+    "city": "DHAKA",
+    "vehicleType": "CNG",
+    "limit": 50
+  }
+}
+```
+
+**No Data (200)**
+```json
+{
+  "routes": [],
+  "count": 0,
+  "filters": {}
+}
+```
+
+### Notes
+
+- Only routes with at least **3 reports** are returned (for reliability)
+- Routes are sorted by trip count (most popular first)
+- Median fare is calculated from all reports for that route
+- Distance is averaged across all trips
+
+### Example
+
+```bash
+# Get top 10 popular routes in Dhaka for CNG
+curl "http://localhost:3000/api/routes/popular?city=DHAKA&vehicleType=CNG&limit=10"
+
+# Get all popular routes (up to 50)
+curl "http://localhost:3000/api/routes/popular"
+```
 
 ---
 

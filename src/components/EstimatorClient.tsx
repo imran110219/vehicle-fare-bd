@@ -41,6 +41,29 @@ export function EstimatorClient({ configs, lang }: Props) {
   const [distanceKm, setDistanceKm] = useState(0);
   const [communityRange, setCommunityRange] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [quickEstimateRoute, setQuickEstimateRoute] = useState<string | null>(null);
+
+  // Load quick estimate from sessionStorage on mount
+  useEffect(() => {
+    const quickEstimate = sessionStorage.getItem("quickEstimate");
+    if (quickEstimate) {
+      try {
+        const data = JSON.parse(quickEstimate);
+        setCity(data.city);
+        setVehicleType(data.vehicleType);
+        setDistanceKm(data.distanceKm || 0);
+        setQuickEstimateRoute(`${data.pickupArea} → ${data.dropArea}`);
+        // Clear the sessionStorage after loading
+        sessionStorage.removeItem("quickEstimate");
+        // Auto-estimate after a brief delay to let state update
+        setTimeout(() => {
+          onEstimate();
+        }, 100);
+      } catch (e) {
+        console.error("Failed to parse quick estimate data", e);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (!vehicleOptions.includes(vehicleType)) {
@@ -109,6 +132,11 @@ export function EstimatorClient({ configs, lang }: Props) {
       <header className="rounded-2xl bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-bold text-brand-900">{dictionary.estimatorTitle}</h1>
         <p className="text-sm text-slate-600">{dictionary.estimatorSubtitle}</p>
+        {quickEstimateRoute && (
+          <div className="mt-3 rounded-lg bg-brand-50 p-3 text-sm text-brand-800">
+            <span className="font-semibold">📍 Popular route loaded:</span> {quickEstimateRoute}
+          </div>
+        )}
       </header>
 
       <section className="grid gap-6 lg:grid-cols-2">
