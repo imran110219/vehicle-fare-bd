@@ -2,13 +2,16 @@
 CREATE TYPE "Role" AS ENUM ('USER', 'ADMIN');
 
 -- CreateEnum
-CREATE TYPE "City" AS ENUM ('DHAKA', 'CHATTOGRAM', 'SYLHET', 'KHULNA', 'OTHER');
+CREATE TYPE "City" AS ENUM ('BARISHAL', 'BOGURA', 'CHATTOGRAM', 'CUMILLA', 'DHAKA', 'DINAJPUR', 'FENI', 'GAZIPUR', 'JASHORE', 'KHULNA', 'KUSHTIA', 'MYMENSINGH', 'NARAYANGANJ', 'NOAKHALI', 'PABNA', 'RAJSHAHI', 'RANGPUR', 'SAVAR', 'SYLHET', 'TANGAIL', 'OTHER');
 
 -- CreateEnum
 CREATE TYPE "TimeOfDay" AS ENUM ('MORNING', 'AFTERNOON', 'EVENING', 'NIGHT');
 
 -- CreateEnum
 CREATE TYPE "Weather" AS ENUM ('CLEAR', 'RAIN');
+
+-- CreateEnum
+CREATE TYPE "VehicleType" AS ENUM ('RICKSHAW', 'CNG', 'AUTO_RICKSHAW', 'BIKE', 'CAR', 'MICROBUS', 'BUS', 'OTHER');
 
 -- CreateEnum
 CREATE TYPE "NegotiationDifficulty" AS ENUM ('EASY', 'MEDIUM', 'HARD');
@@ -67,15 +70,20 @@ CREATE TABLE "VerificationToken" (
 );
 
 -- CreateTable
-CREATE TABLE "CityConfig" (
+CREATE TABLE "VehicleFareConfig" (
     "id" TEXT NOT NULL,
     "city" "City" NOT NULL,
+    "vehicleType" "VehicleType" NOT NULL,
     "baseFare" INTEGER NOT NULL,
     "perKmRate" INTEGER NOT NULL,
+    "morningMultiplier" DOUBLE PRECISION NOT NULL DEFAULT 1,
+    "afternoonMultiplier" DOUBLE PRECISION NOT NULL DEFAULT 1,
+    "eveningMultiplier" DOUBLE PRECISION NOT NULL DEFAULT 1,
+    "nightMultiplier" DOUBLE PRECISION NOT NULL DEFAULT 1.15,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "CityConfig_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "VehicleFareConfig_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -83,14 +91,14 @@ CREATE TABLE "FareReport" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "city" "City" NOT NULL,
+    "vehicleType" "VehicleType" NOT NULL,
     "pickupArea" TEXT NOT NULL,
     "dropArea" TEXT NOT NULL,
-    "pickupLat" DOUBLE PRECISION,
-    "pickupLng" DOUBLE PRECISION,
-    "dropLat" DOUBLE PRECISION,
-    "dropLng" DOUBLE PRECISION,
     "distanceKm" DOUBLE PRECISION NOT NULL,
     "farePaid" INTEGER NOT NULL,
+    "estimatedFareAtTime" INTEGER,
+    "estimatorVersion" TEXT NOT NULL DEFAULT 'v1',
+    "seedKey" TEXT,
     "timeOfDay" "TimeOfDay" NOT NULL,
     "weather" "Weather",
     "passengerCount" INTEGER NOT NULL,
@@ -104,22 +112,10 @@ CREATE TABLE "FareReport" (
 );
 
 -- CreateTable
-CREATE TABLE "GeocodeCache" (
-    "id" TEXT NOT NULL,
-    "query" TEXT NOT NULL,
-    "lat" DOUBLE PRECISION NOT NULL,
-    "lng" DOUBLE PRECISION NOT NULL,
-    "displayName" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "GeocodeCache_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "DistanceBucketStat" (
     "id" TEXT NOT NULL,
     "city" "City" NOT NULL,
+    "vehicleType" "VehicleType" NOT NULL,
     "bucket" "DistanceBucket" NOT NULL,
     "timeOfDay" "TimeOfDay" NOT NULL,
     "medianFare" DOUBLE PRECISION NOT NULL,
@@ -147,7 +143,13 @@ CREATE UNIQUE INDEX "VerificationToken_token_key" ON "VerificationToken"("token"
 CREATE UNIQUE INDEX "VerificationToken_identifier_token_key" ON "VerificationToken"("identifier", "token");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "CityConfig_city_key" ON "CityConfig"("city");
+CREATE INDEX "VehicleFareConfig_city_idx" ON "VehicleFareConfig"("city");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "VehicleFareConfig_city_vehicleType_key" ON "VehicleFareConfig"("city", "vehicleType");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "FareReport_seedKey_key" ON "FareReport"("seedKey");
 
 -- CreateIndex
 CREATE INDEX "FareReport_city_createdAt_idx" ON "FareReport"("city", "createdAt");
@@ -156,10 +158,7 @@ CREATE INDEX "FareReport_city_createdAt_idx" ON "FareReport"("city", "createdAt"
 CREATE INDEX "FareReport_city_distanceKm_idx" ON "FareReport"("city", "distanceKm");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "GeocodeCache_query_key" ON "GeocodeCache"("query");
-
--- CreateIndex
-CREATE UNIQUE INDEX "DistanceBucketStat_city_bucket_timeOfDay_key" ON "DistanceBucketStat"("city", "bucket", "timeOfDay");
+CREATE UNIQUE INDEX "DistanceBucketStat_city_vehicleType_bucket_timeOfDay_key" ON "DistanceBucketStat"("city", "vehicleType", "bucket", "timeOfDay");
 
 -- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
